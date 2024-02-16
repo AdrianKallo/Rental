@@ -1,42 +1,53 @@
-// index.js
-
 const express = require('express');
 const bodyParser = require('body-parser');
-const rental = require('./rentalPrice');
+const rental = require('./main/rentalPrice');
 const fs = require('fs');
 
 const app = express();
 const port = 3000;
 
+// Middleware setup
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(express.static('public'));
 app.use('/pictures', express.static('images'));
 
+// Read HTML files
 const formHtml = fs.readFileSync('form.html', 'utf8');
 const resultHtml = fs.readFileSync('result.html', 'utf8');
 
+// POST route to handle form submission
 app.post('/', (req, res) => {
-    const post = req.body;
-
-    // Extracting driver's license duration from input
-    const licenseStartDate = new Date(post.licensedate);
-    const currentDate = new Date();
-    const licenseDurationInYears = (currentDate - licenseStartDate) / (1000 * 60 * 60 * 24 * 365);
-
-    const result = rental.calculateRentalPrice(
-        String(post.pickup),
-        String(post.dropoff),
-        Date.parse(post.pickupdate),
-        Date.parse(post.dropoffdate),
-        String(post.type),
-        Number(post.age),
-        licenseDurationInYears // Pass license duration to rental price calculation function
+    const formData = req.body;
+    const carClass = formData.type;
+    const rentalPrice = rental.calculateRentalPrice(
+        formData.pickupdate,
+        formData.dropoffdate,
+        carClass,
+        parseInt(formData.age),
+        parseInt(formData.licenseYears) 
     );
 
-    res.send(formHtml + generateResultHtml(result));
+    // JavaScript code to display result based on car class
+    const script = `
+        <script>
+            document.querySelectorAll('.car-item').forEach(item => {
+                item.style.display = 'none';
+            });
+            document.getElementById('${carClass.toLowerCase()}-result').style.display = 'block';
+        </script>
+    `;
+
+    // Replace $0 in result HTML with calculated rental price
+    let resultHtmlWithPrice = resultHtml.replace(/\$0/g, rentalPrice);
+
+    // Append JavaScript code to result HTML
+    resultHtmlWithPrice += script;
+
+    // Send form HTML with updated result to the client
+    res.send(formHtml + resultHtmlWithPrice);
 });
 
+// GET route to serve form HTML
 app.get('/', (req, res) => {
     res.send(formHtml);
 });
@@ -45,24 +56,3 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
-
-// Function to generate HTML for displaying rental price result
-function generateResultHtml(result) {
-    let html = `<ul class="car-list">`;
-
-    for (const [key, value] of Object.entries(result)) {
-        if (key === 'error') {
-            html += `<li class="error-message">${value}</li>`;
-        } else {
-            html += `<li class="car-item">
-                        <div class="car-details">
-                            <div class="car-name">${key}</div>
-                            <div class="car-price">Price: $${value.toFixed(2)} per day</div>
-                        </div>
-                    </li>`;
-        }
-    }
-    
-    html += `</ul>`;
-    return html;
-}
