@@ -6,14 +6,17 @@ const LOW_SEASON_MONTHS = [11, 12, 1, 2, 3]; // November to March
 const HIGH_SEASON_PRICE_INCREASE = 0.15;
 const RACER_PRICE_INCREASE_UNDER_25 = 0.5;
 const DISCOUNT_MORE_THAN_10_DAYS = 0.9;
+const LICENSE_YEARS_THRESHOLD_1 = 1;
+const LICENSE_YEARS_THRESHOLD_2 = 2;
 const LICENSE_YEARS_THRESHOLD_3 = 3;
+const LICENSE_YEARS_PRICE_INCREASE_2 = 0.3;
 const LICENSE_YEARS_PRICE_INCREASE_3 = 15;
 
 function canRentCar(age, licenseYears, carClass) {
     if (age < MIN_DRIVER_AGE) {
         return "Driver too young - cannot rent a car.";
     }
-    if (licenseYears < 1) {
+    if (licenseYears === LICENSE_YEARS_THRESHOLD_1) {
         return "Driver must hold a license for at least one year to rent a car.";
     }
     if (carClass !== "Compact" && (age >= MIN_DRIVER_AGE && age <= COMPACT_AGE_LIMIT)) {
@@ -42,15 +45,21 @@ function calculateRentalPrice(pickupDate, dropoffDate, type, age, licenseYears) 
         rentalPrice *= 1 + HIGH_SEASON_PRICE_INCREASE;
     }
 
-    if (days > 10 && season !== "low") {
+    if (days > 10 && season !== "High") {
         rentalPrice *= DISCOUNT_MORE_THAN_10_DAYS;
     }
 
-    if (licenseYears < LICENSE_YEARS_THRESHOLD_3 && season === "High") {
-        rentalPrice += LICENSE_YEARS_PRICE_INCREASE_3 * days;
-    }
+    rentalPrice = applyLicenseYearsDiscount(rentalPrice, licenseYears, season, days);
 
     return '$' + (rentalPrice * days).toFixed(2);
+}
+function applyLicenseYearsDiscount(rentalPrice, licenseYears, season, days) {   
+
+    if (licenseYears < LICENSE_YEARS_THRESHOLD_3 && season === "High") {
+        rentalPrice += (LICENSE_YEARS_PRICE_INCREASE_3 * days);
+    }
+    return rentalPrice;
+
 }
 
 function calculateRentalDays(pickupDate, dropoffDate) {
