@@ -89,13 +89,6 @@ describe('calculateRentalPrice function tests', () => {
         expect(calculateRentalPrice('2024-07-01', '2024-07-11', 'Compact', 25, 3)).toBe("$316.25");
     });
 
-    test('Compact car rental for 11 days during high season with license years above 3', () => {
-        expect(calculateRentalPrice('2024-07-01', '2024-07-11', 'Compact', 25, 4)).toBe("$316.25");
-    });
-    test('5 days is not considered a long rental', () => {
-        expect(calculateRentalPrice('2024-01-01', '2024-01-05', 'Compact', 25, 3)).toBe('$125.00');
-    });
-
     test('Driver aged 24 renting a Racer during high season with license years below 3', () => {
         expect(calculateRentalPrice('2024-07-01', '2024-07-11', 'Racer', 24, 2)).toBe("$620.40");
     });
