@@ -104,4 +104,27 @@ describe('calculateRentalPrice function tests', () => {
     test('Driver aged 24 renting a Racer during low season with license years equal to 3', () => {
         expect(calculateRentalPrice('2024-01-01', '2024-01-11', 'Racer', 24, 3)).toBe("$237.60");
     });
+
+    test('Car rented for 3 weekdays by a 50 year old driver', () => {
+        // Monday (2024-07-01), Tuesday (2024-07-02), Wednesday (2024-07-03)
+        expect(calculateRentalPrice('2024-07-01', '2024-07-03', 'Compact', 50, 3)).toBe("$172.50");
+    });
+    
+    test('Car rented for 3 weekend days by a 50 year old driver', () => {
+        // Thursday (2024-07-04), Friday (2024-07-05), Saturday (2024-07-06)
+        expect(calculateRentalPrice('2024-07-04', '2024-07-06', 'Compact', 50, 3)).toBe("$172.50");
+    });
+    
+    test('Car rented for 5 weekdays and 2 weekend days by a 30 year old driver', () => {
+        // Monday (2024-07-01) to Friday (2024-07-05), Saturday (2024-07-06), Sunday (2024-07-07)
+        expect(calculateRentalPrice('2024-07-01', '2024-07-07', 'Compact', 30, 3)).toBe("$241.50");
+    });
+    
+    test('Car rented for 2 weekdays and 5 weekend days by a 24 year old driver', () => {
+        // Wednesday (2024-07-03), Thursday (2024-07-04), Friday (2024-07-05), Saturday (2024-07-06), Sunday (2024-07-07), Monday (2024-07-08), Tuesday (2024-07-09)
+        expect(calculateRentalPrice('2024-07-03', '2024-07-09', 'Compact', 24, 3)).toBe("$193.20");
+    });
+    
 });
+
+
